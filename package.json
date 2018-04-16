@@ -4,12 +4,15 @@
   "description": "used to track inventory and steam market Items",
   "main": "main.js",
   "dependencies": {
+    "js-yaml": "^3.11.0",
+    "money-js": "^1.0.2",
     "money": "^0.2.0",
     "open-exchange-rates": "^0.3.0",
     "progress": "^2.0.0",
     "promise": "^8.0.1",
     "sleep": "^5.1.1",
     "steamcommunity": "^3.31.0",
+    "terminal-kit": "^1.11.2"
   },
   "devDependencies": {},
   "scripts": {
