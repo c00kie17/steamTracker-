@@ -19,7 +19,7 @@
       {"item":"Tempest Helm of the Thundergod","change":10},
       {"item":"Great Sage's Reckoning","change":10},
       {"item":"Exalted Bladeform Legacy","change":10},
-      {"item":"Exalted Feast of Abscession","change":10},
+      {"item":"Exalted Feast of Abscession","change":10}
     ]
   },
   "InventoryItems":{
