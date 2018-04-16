@@ -1,0 +1,28 @@
+{
+  "name": "steamtracker",
+  "version": "1.0.0",
+  "description": "used to track inventory and steam market Items",
+  "main": "main.js",
+  "dependencies": {
+    "money": "^0.2.0",
+    "open-exchange-rates": "^0.3.0",
+    "progress": "^2.0.0",
+    "promise": "^8.0.1",
+    "sleep": "^5.1.1",
+    "steamcommunity": "^3.31.0",
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/c00kie17/steamTracker-.git"
+  },
+  "author": "c00kie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/c00kie17/steamTracker-/issues"
+  },
+  "homepage": "https://github.com/c00kie17/steamTracker-#readme"
+}
