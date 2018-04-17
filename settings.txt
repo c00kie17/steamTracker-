@@ -1,9 +1,9 @@
 {
   "currency": "INR",
-  "secondayAccount":"",
+  "secondayAccount":"76561198298683833",
   "allTradeble": true,
   "tracksellDuplicate": true,
-  "tarckbuyDuplicate": true,
+  "trackbuyDuplicate": true,
   "daymedian":30,
   "lowersellLimit":50,
   "lowerbuyLimit":50,

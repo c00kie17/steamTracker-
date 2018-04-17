@@ -15,7 +15,7 @@ module.exports = {
 	getNormalBuyList :function(){
 		itemBuyList = []
 		return new promise(function(complete,reject){
-			if (settings.tarckbuyDuplicate){
+			if (settings.trackbuyDuplicate){
 				promiseList = []
 				for(var game in settings.InventoryItems){
 					promiseList.push(getInventory(game))
