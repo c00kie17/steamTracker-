@@ -25,6 +25,7 @@ used to track inventory and steam market Items
   - **optional**: you will also need **_git_** you can download it [here](https://git-scm.com/downloads)
   - next step is to download this repo, you can do that by opening _cmd_ on windows or _terminal_ on mac and running ``` git clone https://github.com/c00kie17/steamTracker- ``` if you did not download git you can click the **_Clone or download_** button on the top right corner of the page and download the repositiory
   - please set the settings for the script, you can read more about it above.
+  - you can get into the folder by running ```cd steamTracker-/```
   - run ```npm install```  to install all depedencies 
   - you can run the script by running ```node main.js```
   - first time you run it it will ask you for your steam username, password and steamGuard, after that unless there is an error or the session expires you dont need to enter those details again.
