@@ -11,37 +11,49 @@ settings = JSON.parse(fs.readFileSync('settings.txt'));
 
 module.exports = {
 
-	//not being used at the moment
-	getSearchBuyList: function(){
-		itemBuyList = []
-		return new promise(function(complete,reject){
-			promiseList = []
-			for(var game in settings.trackItems){
-				for(var i=0; i< settings.trackItems[game].length; i++) {
-					promiseList.push(serachItemList(settings.trackItems[game][i].item,game,settings.trackItems[game][i].change))
-				}
-			}
-			promise.all(promiseList).then(function(values){
-				for (var i = 0; i < values.length; i++) {
-					for (var j = 0; j < values[i].length; j++) {
-						itemBuyList.push(values[i][j])
-					}
-				}
-				complete({"buy":itemBuyList})
-			})
-		})
-	},
 
 	getNormalBuyList :function(){
 		itemBuyList = []
 		return new promise(function(complete,reject){
-			for(var game in settings.trackItems){
-				for (var i = 0; i < settings.trackItems[game].length; i++) {
-				 	data = {"name":settings.trackItems[game][i].item,"change":settings.trackItems[game][i].change,"appid":game}
-				 	itemBuyList.push(data)
-				} 
+			if (settings.tarckbuyDuplicate){
+				promiseList = []
+				for(var game in settings.InventoryItems){
+					promiseList.push(getInventory(game))
+				}
+				promise.all(promiseList).then(function(values){
+					inventory = []
+					for (var i = 0; i < values.length; i++) {
+						for (var j = 0; j < values[i].length; j++) {
+							inventory.push(values[i][j])
+						}
+					}
+					for(var game in settings.trackItems){
+						for (var i = 0; i < settings.trackItems[game].length; i++) {
+							var flag = true
+							for (var j = 0; j < inventory.length; j++) {
+								if(settings.trackItems[game][i].item == inventory[j].market_hash_name){
+									console.log("found item in inventory: "+inventory[j].market_hash_name)
+									flag = false
+								}
+							}
+							if(flag){
+								data = {"name":settings.trackItems[game][i].item,"change":settings.trackItems[game][i].change,"appid":game}
+					 			itemBuyList.push(data)
+							}
+						}	
+					}
+					complete({"buy":itemBuyList})
+				})	
+			}else{
+				for(var game in settings.trackItems){
+					for (var i = 0; i < settings.trackItems[game].length; i++) {
+					 	data = {"name":settings.trackItems[game][i].item,"change":settings.trackItems[game][i].change,"appid":game}
+					 	itemBuyList.push(data)
+					} 
+				}
+				complete({"buy":itemBuyList})
 			}
-			complete({"buy":itemBuyList})
+			
 		})
 	},
 
@@ -61,7 +73,7 @@ module.exports = {
 				}
 				if (settings.allTradeble){
 					for (var i = 0; i < inventory.length; i++) {
-						data = {"name":inventory[i].market_hash_name,"change":settings.allTradebleChange,"appid":inventory[i].appid}
+						data = {"name":inventory[i].market_hash_name,"change":settings.defaultSellChange,"appid":inventory[i].appid}
 						itemSellList.push(data)
 					}
 					complete({"sell":itemSellList})
@@ -81,8 +93,16 @@ module.exports = {
 							}
 						}
 					}
-					if(settings.trackDuplicate){
-						//do the duplicate code Pale Augur will be available to test on 21st
+					if(settings.tracksellDuplicate){
+						trackList = []
+						for (var i = 0; i < inventory.length; i++) {
+							if (trackList.includes(inventory[i].name)){
+								data = {"name":inventory[i].market_hash_name,"change":settings.defaultSellChange,"appid":inventory[i].appid}
+								itemSellList.push(data)
+							}else{
+								trackList.push(inventory[i].name)
+							}
+						}
 						complete({"sell":itemSellList})
 					}else{
 						complete({"sell":itemSellList})
@@ -111,41 +131,3 @@ function getInventory(appid){
 }
 
 
-//not being used at the moment 
-function serachItemList(searchTerm,appid,change){
-	return new promise(function(complete,reject){
-		login.getCommunity().marketSearch({
-			"query":searchTerm,
-			"appid":appid,
-			"searchDescriptions":false
-		},function(err,items){
-			if (err){
-				if (err == "Error: There were no items matching your search. Try again with different keywords."){
-					console.log("there is not listing for: "+searchTerm)
-				}else{
-					console.log(err)
-				}
-			}else{
-				promiseList = []
-				items.forEach(function(value){
-					promiseList.push(tracker.getItem(appid,value.market_hash_name,0))
-				})
-
-				promise.all(promiseList).then(function(values){
-					searchList = []
-					item = null
-					for (var i = 0; i < values.length; i++) {
-						if (item == null || values[i].lowestPrice < item.lowestPrice){
-							item = values[i]
-						}
-					}	
-					data = {"name":item._hashName,"change":change,"appid":appid}
-					searchList.push(data)
-					complete(searchList)
-				})
-				
-				
-			}	
-		})
-	})
-}

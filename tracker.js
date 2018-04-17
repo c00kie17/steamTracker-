@@ -29,8 +29,12 @@ module.exports = {
 			}
 		}
 		bar = new ProgressBar( 'checking [:bar] :rate/bps :percent :etas', { total: totalVal });
-		loopFunc(buysellList,0,'buy',buyCounter)
-		loopFunc(buysellList,1,'sell',sellCounter)
+		if (buysellList[0]['buy'].length > 0 || buysellList[0] != null){
+			loopFunc(buysellList,0,'buy',buyCounter)
+		}
+		if(buysellList[1]['sell'].length > 0 || buysellList[1] != null){
+			loopFunc(buysellList,1,'sell',sellCounter)
+		}	
 	},
 
 	updateCurrency: function(){
@@ -89,21 +93,21 @@ function calculateDiff(item,transaction,change){
 	change = (change*averagePrice)/100
 	if (transaction == 'buy'){
 		buyPrice = fx(item.lowestPrice/100).from('USD').to(settings.currency)
-		if (buyPrice < settings.lowercheck){
-			//chat.sendChat(item._hashName + " is lower than lower-limit at "+ buyPrice)
-			console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
+		if (buyPrice < settings.lowerbuyLimit){
+			chat.sendChat(item._hashName + " is lower than lower-limit at "+ buyPrice)
+			//console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
 		}else if(buyPrice < (averagePrice-change)){
 			currentChange = ((buyPrice - averagePrice)*100)/averagePrice
-            //chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ buyPrice)  
-            console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ buyPrice)          
+            chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ buyPrice)  
+            //console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ buyPrice)          
 		}
 	}
 	if (transaction == 'sell'){
 	    sellPrice = fx(item.highestBuyOrder/100).from('USD').to(settings.currency) 
 	    if(sellPrice > (averagePrice+change) && sellPrice > setting.lowersellLimit){
 	        currentChange = ((sellPrice - averagePrice)*100)/averagePrice
-	        //chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ sellPrice)
-	        console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ sellPrice)                
+	        chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ sellPrice)
+	        //console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ sellPrice)                
 	    }
 	}
 }

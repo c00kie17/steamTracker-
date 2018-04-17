@@ -1,12 +1,14 @@
 {
   "currency": "INR",
+  "secondayAccount":"",
   "allTradeble": true,
-  "allTradebleChange": 10,
-  "trackDuplicate": true,
-  "sellAllInventory": true,
+  "tracksellDuplicate": true,
+  "tarckbuyDuplicate": true,
   "daymedian":30,
   "lowersellLimit":50,
-  "lowercheck":50,
+  "lowerbuyLimit":50,
+  "defaultsellChange": 10,
+  "defaultbuyChange": 10,
   "trackItems":{
     "570":[
       {"item":"Exalted Frost Avalanche","change":10},
@@ -24,7 +26,7 @@
   },
   "InventoryItems":{
     "570":[
-  
+      {"item":"Tribute Upgrade Infuser - Fall Season 2015","change":10}
     ]
   }
 }

@@ -10,7 +10,9 @@ login.performLogin().then(function(response){
 	chat.logIntoChat()
 	console.log("logged In")
 	var buy = inventory.getNormalBuyList()
-	var sell = inventory.getSellList()
+	var sell = null
+	setTimeout(function () { sell = inventory.getSellList()}, 1000)
+	
 	promise.all([buy,sell]).then(function(values){
 		console.log("fetched buy/sell List")
 		tracker.trackItem(values)
@@ -21,11 +23,9 @@ login.performLogin().then(function(response){
 	process.exit()
 })
 
-//things to do:
-//do duplicate flag 
-//check if sell item in inventory
-//fix inventory to fetch once 
-//add a secondary account to send messeges to 
+ 
+
+
 
 
 
