@@ -103,11 +103,15 @@ function calculateDiff(item,transaction,change){
 		buyPrice = fx(item.lowestPrice/100).from('USD').to(inventory.getSettings().currency)
 		if (buyPrice < inventory.getSettings().lowerbuyLimit){
 			chat.sendChat(item._hashName + " is lower than lower-limit at "+ buyPrice)
-			console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
+			if(inventory.getSettings().logtoConsole){
+				console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
+			}	
 		}else if(buyPrice < (averagePrice-change)){
 			currentChange = ((buyPrice - averagePrice)*100)/averagePrice
             chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
-            console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))          
+            if(inventory.getSettings().logtoConsole){
+            	console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
+            }            
 		}
 	}
 	if (transaction == 'sell'){
@@ -115,7 +119,9 @@ function calculateDiff(item,transaction,change){
 	    if(sellPrice > (averagePrice+change) && sellPrice > inventory.getSettings().lowersellLimit){
 	        currentChange = ((sellPrice - averagePrice)*100)/averagePrice
 	        chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2))
-	        console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2))                
+	        if(inventory.getSettings().logtoConsole){
+	       		console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2)) 
+	       	}	               
 	    }
 	}
 }

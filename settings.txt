@@ -1,14 +1,15 @@
 {
   "currency": "INR",
-  "secondayAccount":"76561198298683833",
-  "restartTime":5,
+  "secondayAccount":"",
   "loop": true,
+  "restartTime":5,
+  "logtoConsole":true,
   "allTradeble": true,
   "tracksellDuplicate": true,
   "trackbuyDuplicate": true,
   "daymedian":30,
   "lowersellLimit":50,
-  "lowerbuyLimit":50,
+  "lowerbuyLimit":100,
   "defaultsellChange": 10,
   "defaultbuyChange": 10,
   "trackItems":{
