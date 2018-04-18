@@ -18,7 +18,6 @@ module.exports = {
 			oAuthLogin().then(function(response){
 				complete()
 			}).catch(function(err){
-				//console.log(err)
 				manualLogin().then(function(response){
 					complete()
 				}).catch(function(err){
@@ -64,6 +63,8 @@ function oAuthLogin(){
   					console.log("login details expired or not available, please login again")
   					manualLogin().then(function(){
   						complete()
+  					}).catch(function(err){
+  						reject(err)
   					})
   				}
    				

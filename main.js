@@ -3,6 +3,7 @@ var inventory = require('./inventory.js')
 var tracker = require('./tracker.js')
 var promise = require('promise')
 var chat = require('./chat')
+const { spawn } = require('child_process');
 
 function start(){
 	console.clear()
@@ -21,8 +22,14 @@ function start(){
 		})
 
 	}).catch(function(err){
-		console.log("steam api ist reponding please run script again")
+		if (err == "Error: HTTP error 403"){
+			console.log("you have reached the rate limit allowed by steam, you can bypass this by changing your IP address by using a VPN like TunnelBear: https://www.tunnelbear.com")
+		}else{
+			console.log(err)
+			console.log("steam api ist reponding please run script again")		
+		}
 		process.exit()
+		
 	})
 }
 start()
@@ -31,6 +38,8 @@ if (inventory.getSettings().loop){
 		start()
 	},(1000*60)*inventory.getSettings().restartTime)
 }
+
+
 
  
 
