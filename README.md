@@ -4,7 +4,7 @@ used to track inventory and steam market Items
 ## Settings.txt
 **the formatting of this file is in json.** 
 - **currency** : (**_String_** )The currency that steam displays prices to you in and the currency you want to set all the setting values at.
-- **secondayAccount** :  (**_String_** )The account id of any other steam account you have, this is used to send you notifications. You can get the steam id by going to that accounts profile page and copying it from the link. You need to friends with this account on steam.<img width="532" alt="screen shot 2018-04-17 at 5 41 25 pm" src="https://user-images.githubusercontent.com/10531093/38868956-9d6c2b38-4266-11e8-8748-86bf625fd122.png">
+- **secondayAccount** :  (**_String_** )The account id of any other steam account you have, this is used to send you notifications. You can get the steam id by going to that accounts profile page and copying it from the link. You need to friends with the account you specifiy in this field on steam.<img width="532" alt="screen shot 2018-04-17 at 5 41 25 pm" src="https://user-images.githubusercontent.com/10531093/38868956-9d6c2b38-4266-11e8-8748-86bf625fd122.png">
 - **loop** : (**_Bool_**) if set to true will loop the script to run every **_restartTime_**
 - **restartTime** : (**_int_**) the number of minutes after which you want the script to run again, minimum value for this flag is 5. needs **_loop_** to be set to true.
 - **logtoConsole** : (**_Bool_**) logs the output to console. After each check the script clears the console so you may miss notifications if you are using this. Better used for one time runs.
@@ -18,7 +18,7 @@ used to track inventory and steam market Items
 - **defaultbuyChange**: (**_int_**)  default change value given to every buy item whose change value is not specified 
 - **trackItems** : (**_dict_**) contains arrays of items you wanted to track with keys of these arrays set as game thier appid 
   - **appId**: (**_array_**) contains a array of dictionainies items you want to track for that game and thier change value, you can get the appid value [here](https://steamdb.info/apps/)
-    - **_item_**: (**_String_** ) the hash name of the market item you want to track, you can get the the hash name from thier steam market page <img width="354" alt="screen shot 2018-04-17 at 6 09 09 pm" src="https://user-images.githubusercontent.com/10531093/38870123-767473ba-426a-11e8-8634-fd6151179545.png">
+    - **_item_**: (**_String_** ) the hash name of the market item you want to track, you can get the the hash name for the item from its steam market page.This field searches exact string given by steam.<img width="354" alt="screen shot 2018-04-17 at 6 09 09 pm" src="https://user-images.githubusercontent.com/10531093/38870123-767473ba-426a-11e8-8634-fd6151179545.png">
     - **_change_**: (**_int_**) is a % value of how much you +/- change from the average value you want to trigger a notification on.
     
 - **InventoryItems**: (**_dict_**) contains arrays of items you wanted to track form your inventory, these items are added to your buy list. Holds the same format as **_trackItems_**
