@@ -2,11 +2,19 @@ var yaml = require('js-yaml');
 var fs = require('fs');
 var promise = require('promise')
 var login = require('./login.js')
-var tracker = require('./tracker.js')
 var settings = null
 
+try{
+	settings = JSON.parse(fs.readFileSync('settings.txt'));
+	if (settings.restartTime < 5){
+		console.log("restart time is set too low, please set it at a value above 5")
+		process.exit()
+	}
+}catch(err){
+	console.log("formatting of the settings.txt is not in json, please fix it and try again")
+	process.exit()
+}
 
-settings = JSON.parse(fs.readFileSync('settings.txt'));
 
 
 module.exports = {
@@ -18,7 +26,7 @@ module.exports = {
 			if (settings.trackbuyDuplicate){
 				promiseList = []
 				for(var game in settings.InventoryItems){
-					promiseList.push(getInventory(game))
+					promiseList.push(getInventory(game,false))
 				}
 				promise.all(promiseList).then(function(values){
 					inventory = []
@@ -62,7 +70,7 @@ module.exports = {
 		return new promise(function(complete,reject){
 			promiseList = []
 			for(var game in settings.InventoryItems){
-				promiseList.push(getInventory(game))
+				promiseList.push(getInventory(game,true))
 			}
 			promise.all(promiseList).then(function(values){
 				inventory = []
@@ -118,9 +126,9 @@ module.exports = {
 	}	
 }
 
-function getInventory(appid){
+function getInventory(appid,tradeble){
 	return new promise(function(complete,reject){
-		login.getUser().getInventoryContents(appid,2,true,function(err,inventory){
+		login.getUser().getInventoryContents(appid,2,tradeble,function(err,inventory){
 			if(err){
 				reject(err)
 			}else{

@@ -1,6 +1,8 @@
 {
   "currency": "INR",
   "secondayAccount":"76561198298683833",
+  "restartTime":5,
+  "loop": true,
   "allTradeble": true,
   "tracksellDuplicate": true,
   "trackbuyDuplicate": true,

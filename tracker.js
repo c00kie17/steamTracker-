@@ -6,13 +6,15 @@ var sleep = require('sleep');
 var chat = require('./chat')
 var fs = require('fs');
 var ProgressBar = require('progress')
+var inventory = require('./inventory.js')
 
 
 oxr.set({ app_id: '2a83d1a7787c4493a71c6cb1e6039672' })
 
-var settings = JSON.parse(fs.readFileSync('settings.txt'));
+
+
 var lookback = new Date()
-lookback = lookback.setDate(lookback.getDate()-settings.daymedian);
+lookback = lookback.setDate(lookback.getDate()-inventory.getSettings().daymedian);
 var bar = null
 var buyCounter = 0
 var sellCounter = 0
@@ -72,10 +74,16 @@ function loopFunc(buysellList,i,transaction,counter){
 		counter++
 		if (counter< buysellList[i][transaction].length){
 			loopFunc(buysellList,i,transaction,counter)
-		} 
-		if (bar.complete) {
-    		process.exit()
-  		}  
+		}
+		if(bar.complete){
+			if (inventory.getSettings().loop){
+				console.clear()
+				console.log("next check will take place in "+inventory.getSettings().restartTime+" minutes")
+			}else{
+				process.exit()
+			}
+			
+		}  
    	}, 1000)
 }
 
@@ -92,22 +100,22 @@ function calculateDiff(item,transaction,change){
 	averagePrice = priceVal/points
 	change = (change*averagePrice)/100
 	if (transaction == 'buy'){
-		buyPrice = fx(item.lowestPrice/100).from('USD').to(settings.currency)
-		if (buyPrice < settings.lowerbuyLimit){
+		buyPrice = fx(item.lowestPrice/100).from('USD').to(inventory.getSettings().currency)
+		if (buyPrice < inventory.getSettings().lowerbuyLimit){
 			chat.sendChat(item._hashName + " is lower than lower-limit at "+ buyPrice)
-			//console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
+			console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
 		}else if(buyPrice < (averagePrice-change)){
 			currentChange = ((buyPrice - averagePrice)*100)/averagePrice
-            chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ buyPrice)  
-            //console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ buyPrice)          
+            chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
+            console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))          
 		}
 	}
 	if (transaction == 'sell'){
-	    sellPrice = fx(item.highestBuyOrder/100).from('USD').to(settings.currency) 
-	    if(sellPrice > (averagePrice+change) && sellPrice > setting.lowersellLimit){
+	    sellPrice = fx(item.highestBuyOrder/100).from('USD').to(inventory.getSettings().currency) 
+	    if(sellPrice > (averagePrice+change) && sellPrice > inventory.getSettings().lowersellLimit){
 	        currentChange = ((sellPrice - averagePrice)*100)/averagePrice
-	        chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ sellPrice)
-	        //console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ sellPrice)                
+	        chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2))
+	        console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2))                
 	    }
 	}
 }
