@@ -1,17 +1,19 @@
-{
-  "currency": "INR",
+{ 
+  "username": "",
+  "password": "",
   "secondayAccount":"",
   "loop": true,
   "restartTime":5,
+  "autotrader":false,
   "logtoConsole":true,
-  "allTradeble": true,
+  "allTradeble": false,
   "tracksellDuplicate": true,
   "trackbuyDuplicate": true,
   "daymedian":30,
   "lowersellLimit":50,
-  "lowerbuyLimit":100,
-  "defaultsellChange": 10,
-  "defaultbuyChange": 10,
+  "lowerbuyLimit":50,
+  "defaultSellChange": 10,
+  "defaultBuyChange": 10,
   "trackItems":{
     "570":[
       {"item":"Exalted Frost Avalanche","change":10},

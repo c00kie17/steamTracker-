@@ -1,129 +1,139 @@
-var login = require('./login.js')
 var promise = require('promise')
-var fx = require('money')
-var oxr = require('open-exchange-rates')
-var sleep = require('sleep');
-var chat = require('./chat')
-var fs = require('fs');
 var ProgressBar = require('progress')
-var inventory = require('./inventory.js')
-
-
-oxr.set({ app_id: '2a83d1a7787c4493a71c6cb1e6039672' })
-
+var gbl = require('./global.js')
 
 
 var lookback = new Date()
-lookback = lookback.setDate(lookback.getDate()-inventory.getSettings().daymedian);
 var bar = null
-var buyCounter = 0
-var sellCounter = 0
-promiseList = []
+
+
 
 module.exports = {
 
 	trackItem: function(buysellList){
-		totalVal = 0
-		
-		for (var i = 0; i < buysellList.length; i++) {
-			for(var transaction in buysellList[i]){
-				totalVal = totalVal + buysellList[i][transaction].length
-			}
-		}
-		bar = new ProgressBar( 'checking [:bar] :rate/bps :percent :etas', { total: totalVal });
-		if (buysellList[0]['buy'].length > 0 || buysellList[0] != null){
-			loopFunc(buysellList,0,'buy',buyCounter)
-		}
-		if(buysellList[1]['sell'].length > 0 || buysellList[1] != null){
-			loopFunc(buysellList,1,'sell',sellCounter)
-		}	
-	},
-
-	updateCurrency: function(){
-		oxr.latest(function() {
-			fx.rates = oxr.rates;
-			fx.base = oxr.base;
-		});
-	},
-
-	getItem: function(appid,name,transaction,change){
+		var buyCounter = 0
+		var sellCounter = 0
 		return new promise(function(complete,reject){
-			login.getCommunity().getMarketItem(appid,name,function(err,item){
-				if(err){
-					module.exports.getItem(appid,name,transaction,change)
-				}else{
-					if (transaction == 0){
-						complete(item)
-					}else{
-						data = {"data":item,"transaction":transaction,"change":change}
-						complete(data)
-					}		
+			var promiseList = []
+			totalVal = 0
+			lookback = lookback.setDate(lookback.getDate()-gbl.getSettings().daymedian);
+			for (var i = 0; i < buysellList.length; i++) {
+				for(var transaction in buysellList[i]){
+					totalVal = totalVal + buysellList[i][transaction].length
 				}
-			})
-		})	
-	}
+			}
+			bar = new ProgressBar( 'checking [:bar] :rate/bps :percent :etas', { total: totalVal });
+			if (buysellList[0]['buy'].length > 0 || buysellList[0] != null){
+				loopgetItem(buysellList,0,'buy',buyCounter)
+			}
+			if(buysellList[1]['sell'].length > 0 || buysellList[1] != null){
+				loopgetItem(buysellList,1,'sell',sellCounter)
+			}
+
+			function loopgetItem(buysellList,i,transaction,counter){
+				setTimeout(function () {  
+					bar.tick()
+					getItem(buysellList[i][transaction][counter].appid,buysellList[i][transaction][counter].name,transaction,buysellList[i][transaction][counter].change).then(function(value){
+						promiseList.push(calculateDiff(value.data,value.transaction,value.change))
+					})
+					counter++
+					if (counter < buysellList[i][transaction].length){
+						loopgetItem(buysellList,i,transaction,counter)
+					} 
+					if(bar.complete){
+						complete()
+						//console.log(promiseList)
+						//promise.all(promiseList).then(function(values){
+						//	console.log(values)
+						//})
+					}
+			   	}, 1000)
+			}
+		})
+			
+	},
 	
 }
 
-function loopFunc(buysellList,i,transaction,counter){
-	setTimeout(function () {  
-		bar.tick()
-		module.exports.getItem(buysellList[i][transaction][counter].appid,buysellList[i][transaction][counter].name,transaction,buysellList[i][transaction][counter].change).then(function(value){
-			calculateDiff(value.data,value.transaction,value.change)
-		})
-		counter++
-		if (counter< buysellList[i][transaction].length){
-			loopFunc(buysellList,i,transaction,counter)
-		}
-		if(bar.complete){
-			if (inventory.getSettings().loop){
-				console.clear()
-				console.log("next check will take place in "+inventory.getSettings().restartTime+" minutes")
-			}else{
-				process.exit()
+
+
+function getItem(appid,name,transaction,change){
+	return new promise(function(complete,reject){
+		gbl.getCommunity().getMarketItem(appid,name,function(err,item){
+			if(err){
+				getItem(appid,name,transaction,change)
 			}
-			
-		}  
-   	}, 1000)
+			data = {"data":item,"transaction":transaction,"change":change}
+			complete(data)	
+		})
+	})	
 }
 
+
+
 function calculateDiff(item,transaction,change){
-	priceVal = 0
-	points = 0
-	for (var i =0; i < item.medianSalePrices.length; i++) {
-  		time = new Date(item.medianSalePrices[i].hour)
-  		if (time.getTime() > lookback){
-  			points++
-  			priceVal = priceVal + item.medianSalePrices[i].price
-  		}
-	}
-	averagePrice = priceVal/points
-	change = (change*averagePrice)/100
-	if (transaction == 'buy'){
-		buyPrice = fx(item.lowestPrice/100).from('USD').to(inventory.getSettings().currency)
-		if (buyPrice < inventory.getSettings().lowerbuyLimit){
-			chat.sendChat(item._hashName + " is lower than lower-limit at "+ buyPrice)
-			if(inventory.getSettings().logtoConsole){
-				console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
-			}	
-		}else if(buyPrice < (averagePrice-change)){
-			currentChange = ((buyPrice - averagePrice)*100)/averagePrice
-            chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
-            if(inventory.getSettings().logtoConsole){
-            	console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
-            }            
+	return new promise(function(complete,reject){
+		priceVal = 0
+		points = 0
+		currency = gbl.getCurrency()
+		settings = gbl.getSettings()
+		for (var i =0; i < item.medianSalePrices.length; i++) {
+	  		time = new Date(item.medianSalePrices[i].hour)
+	  		if (time.getTime() > lookback){
+	  			points++
+	  			priceVal = priceVal + item.medianSalePrices[i].price
+	  		}
 		}
-	}
-	if (transaction == 'sell'){
-	    sellPrice = fx(item.highestBuyOrder/100).from('USD').to(inventory.getSettings().currency) 
-	    if(sellPrice > (averagePrice+change) && sellPrice > inventory.getSettings().lowersellLimit){
-	        currentChange = ((sellPrice - averagePrice)*100)/averagePrice
-	        chat.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2))
-	        if(inventory.getSettings().logtoConsole){
-	       		console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2)) 
-	       	}	               
-	    }
-	}
+		averagePrice = priceVal/points
+		change = (change*averagePrice)/100
+		if (transaction == 'buy'){
+			var buyPrice = null
+			if (currency!= "USD"){
+				buyPrice = gbl.convertValue(item.lowestPrice/100)
+			}else{
+				buyPrice = item.lowestPrice/100
+			}
+			
+			if (buyPrice < settings.lowerbuyLimit){
+				gbl.sendChat(item._hashName + " is lower than lower-limit at "+ buyPrice)
+				if(settings.logtoConsole){
+					console.log(item._hashName + " is lower than lower-limit at "+ buyPrice)
+				}
+				complete({"item":item._hashName,"transaction":transaction,"price":buyPrice})	
+			}
+
+			else if(buyPrice < (averagePrice-change)){
+				currentChange = ((buyPrice - averagePrice)*100)/averagePrice
+	            gbl.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
+	            if(settings.logtoConsole){
+	            	console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% lower than average at "+ Number(buyPrice).toFixed(2))  
+	            }
+	            complete({"item":item._hashName,"transaction":transaction,"price":buyPrice})            
+			}else{
+				complete()
+			}
+		}
+		if (transaction == 'sell'){
+			var sellPrice = null
+			if (currency!= "USD"){
+		    	sellPrice = gbl.convertValue(item.highestBuyOrder/100) 
+		    }else{
+		    	sellPrice = item.highestBuyOrder/100
+		    }
+
+		    if(sellPrice > (averagePrice+change) && sellPrice > settings.lowersellLimit){
+		        currentChange = ((sellPrice - averagePrice)*100)/averagePrice
+		        gbl.sendChat(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2))
+		        if(settings.logtoConsole){
+		       		console.log(item._hashName + " is "+Number(currentChange).toFixed(2)+"% higher than average at "+ Number(buyPrice).toFixed(2)) 
+		       	}
+		       	complete({"item":item._hashName,"transaction":transaction,"price":sellPrice})	               
+		    }else{
+		    	complete()
+		    }
+		}
+	})
+	
 }
 
 

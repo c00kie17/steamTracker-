@@ -1,126 +1,141 @@
-var term = require( 'terminal-kit' ).terminal
+var gbl = require('./global.js')
 var promise = require('promise')
-var fs = require('fs');
-var ReadLine = require('readline');
-var SteamCommunity = require('steamcommunity');
-var community = new SteamCommunity();
-var userVal = null
+var buysell = require('./buysell')
+var tracker = require('./tracker')
 
-var rl = ReadLine.createInterface({
-	"input": process.stdin,
-	"output": process.stdout
+gbl.getClient().on('steamGuard', function(domain, callback) {
+	console.log("Steam Guard code needed from email ending in " + domain);
+	callback(code);
+});
+
+gbl.getClient().on('loggedOn', function(details) {
+	console.log("Logged in");
+});
+
+gbl.getClient().on('wallet', function(hasWallet, currency, balance) {
+	gbl.setBalance(balance)
+});
+
+gbl.getClient().on('webSession', function(sessionID, cookies) {
+	gbl.getCommunity().setCookies(cookies);
+	fetchUser().then(function(){
+		start()
+	}).catch(function(err){
+		if(err == "Error: HTTP error 403"){
+			console.log("you have reached the rate limit allowed by steam, you can bypass this by changing your IP address by using a VPN like hotspotshield: https://www.hotspotshield.com")
+		}else{
+			console.log(err)
+			console.log("an error occoured please try again")
+		}
+	})
+});
+
+gbl.getClient().on('error', function(e) {
+	if (e == "Error: RateLimitExceeded"){
+		console.log("you have reached the rate limit allowed by steam, you can bypass this by changing your IP address by using a VPN like hotspotshield: https://www.hotspotshield.com")
+	}else{
+		console.log("steam api ist reponding please run script again")
+	}
 });
 
 module.exports = {
 
 	performLogin: function(){
-		return new promise(function(complete,reject){
-			oAuthLogin().then(function(response){
-				complete()
-			}).catch(function(err){
-				manualLogin().then(function(response){
-					complete()
-				}).catch(function(err){
-					reject(err)
-				})
-			})
-		})	
-	},
-
-	getUser: function(){
-		return userVal
-	},
-
-	getCommunity: function(){
-		return community
+		gbl.getClient().logOn({
+			"accountName": gbl.getSettings().username,
+			"password": gbl.getSettings().password
+		});
 	}
 
-	
 } 
 
-function oAuthLogin(){
-	return new promise(function(complete,reject){
-		fs.readFile('login.txt', function (err, data) {
-  			if (err){
-  				reject(err);
-  			} 
-  			else{
-  				
-  				try{
-  					data = JSON.parse(data)
-  					community.oAuthLogin(data.steamguard,data.oAuthToken,function(err){
-	   					if(err){
-	   						reject(err)
-	   					}else{
-	   						getUser().then(function(){
-	   							complete()
-	   						}).catch(function(err){
-	   							reject(err)
-	   						})
-	   					}
-   					})
-  				}catch(err){
-  					console.log("login details expired or not available, please login again")
-  					manualLogin().then(function(){
-  						complete()
-  					}).catch(function(err){
-  						reject(err)
-  					})
-  				}
-   				
-  			}
-		});
+
+
+function start(){
+	console.clear()
+	gbl.loadSettings()
+	gbl.updateCurrency()
+	fetchInventory().then(function(){
+		console.log("Fetched Inventory")
+		var buy  = buysell.getBuyList()
+		var sell = buysell.getSellList()
+		promise.all([buy,sell]).then(function(values){
+			console.log("Fetched buy/sell list")
+			tracker.trackItem(values).then(function(){
+				console.log("Done tracking items")
+				if(gbl.getSettings().loop){
+					wait()
+				}else{
+					process.exit()
+				}
+			})
+		})		
 	})
 }
 
-function saveDetails(steamguard,oAuthToken){
-	data = JSON.stringify({'steamguard':steamguard,'oAuthToken':oAuthToken})
-	fs.writeFile("login.txt",data, function(err) {
-	    if(err) {
-	        console.log(err);
-	    }
-	}); 
+function fetchInventory(){
+	return new promise(function(complete,reject){
+		gbl.getUser().getInventoryContexts(function(err,apps){
+			if(err){
+				console.log("an error occoured, trying to fetch inventory again")
+				fetchInventory()
+			}else{
+				promseList = []
+				for(game in apps){
+					promseList.push(getGameInventory(game))
+				}
+				promise.all(promseList).then(function(values){
+					inventoryList = [].concat.apply([], values);
+					gbl.setInventory(inventoryList)
+					complete()		
+				}).catch(function(err){
+					console.log("an error occoured, trying to fetch inventory again")
+					fetchInventory()
+				})
+			}
+		})	
+	})	
 }
 
-function getUser(){
+function getGameInventory(appid){
 	return new promise(function(complete,reject){
-		community.getSteamUser(community.steamID,function(err,user){
+		gbl.getUser().getInventoryContents(appid.toString(),2,false,function(err,inventory){
 			if(err){
 				reject(err)
 			}else{
-				userVal = user
+				complete(inventory)
+			}
+		})
+	})
+}
+
+function fetchUser(){
+	return new promise(function(complete,reject){
+		gbl.getCommunity().getSteamUser(gbl.getCommunity().steamID,function(err,user){
+			if(err){
+				reject(err)
+			}else{
+				gbl.setUser(user)
 				complete()
 			}
 		})
 	})
 }
 
-function manualLogin(){
-	return new promise(function(complete,reject){
-		rl.question("Username: ", function(accountName) {
-			rl.question("Password: ", function(password) {
-				rl.question("SteamGuard :" , function(steamguardVal){
-					community.login({
-						"accountName": accountName,
-						"password": password,
-						"twoFactorCode": steamguardVal
-					}, function(err,sessionID, cookies, steamguard,oAuthToken){
-						if(err){
-							reject(err)
-						}
-						loginDetails = {"community":community,"sessionID":sessionID,"steamguard":steamguard,"oAuthToken":oAuthToken}
-						saveDetails(steamguard,oAuthToken)
-						getUser().then(function(){
-   							complete()
-   						}).catch(function(err){
-   							reject(err)
-   						})
-					})
-				});
-			});
-		});	
-	})	
+function wait(){
+	var options = {weekday: "long", year: "numeric", month: "short",  day: "numeric", hour: "2-digit", minute: "2-digit" }
+	var latest = new Date()
+	differenceVal = latest.getTime() + (gbl.getSettings().restartTime * 60000)
+	var nextcheck = new Date(differenceVal);
+	console.clear()
+	console.log("the next check will occour on: "+nextcheck.toLocaleTimeString("en-us", options))
+	setInterval(function() {
+		start()
+	},(1000*60)*gbl.getSettings().restartTime)
+	
 }
+
+
 
 
 

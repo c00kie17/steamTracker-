@@ -3,7 +3,8 @@ used to track inventory and steam market Items
 
 ## Settings.txt
 **the formatting of this file is in json.** 
-- **currency** : (**_String_** )The currency that steam displays prices to you in and the currency you want to set all the setting values at.
+- **username** : (**_String_** ) Your steam username.
+- **password** : (**_String_** ) Your steam Password.
 - **secondayAccount** :  (**_String_** )The account id of any other steam account you have, this is used to send you notifications. You can get the steam id by going to that accounts profile page and copying it from the link. You need to friends with the account you specifiy in this field on steam.<img width="532" alt="screen shot 2018-04-17 at 5 41 25 pm" src="https://user-images.githubusercontent.com/10531093/38868956-9d6c2b38-4266-11e8-8748-86bf625fd122.png">
 - **loop** : (**_Bool_**) if set to true will loop the script to run every **_restartTime_**
 - **restartTime** : (**_int_**) the number of minutes after which you want the script to run again, minimum value for this flag is 5. needs **_loop_** to be set to true.
