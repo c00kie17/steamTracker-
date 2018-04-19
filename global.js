@@ -12,6 +12,8 @@ var user = null
 var settings = null
 var inventory = null
 var walletBalance = null
+var sessionID = null
+var itemList = []
 var currencyList = {
 	"0": "Invalid",
 	"1": "USD",
@@ -88,14 +90,12 @@ module.exports = {
 	loadSettings:  function(){
 		try{
 			settings = JSON.parse(fs.readFileSync('settings.txt'));
-			if (settings.restartTime < 5){
-				console.log("restart time is set too low, please set it at a value above 5")
-				process.exit()
-			}
+			
 		}catch(err){
 			console.log("formatting of the settings.txt is not in json, please fix it and try again")
 			process.exit()
 		}
+		checkSettings()
 	},
 
 	getSettings: function(){
@@ -128,5 +128,54 @@ module.exports = {
 	
 	getBalance(){
 		return walletBalance
+	},
+
+	addItemList(item){
+		itemList.push(item)
+	},
+
+	containsObj(item){
+		for (var i = 0; i < itemList.length; i++) {
+			if (item === itemList[i]._hashName){
+				return item
+			}
+		}
+		return false
+	},
+
+	cleatItemList(){
+		itemList = []
+	},
+
+	fetchfromInventory(name){
+		for (var i = 0; i < inventory.length; i++) {
+			if(inventory[i].market_hash_name === name){
+				return inventory[i]
+			}
+		}
+		return null
+	},
+
+	setsessionID(value){
+		sessionID = value
+	},
+
+	getsessionID(){
+		return sessionID
+	}
+}
+
+function checkSettings(){
+	flag = false
+	if (!settings.username || !settings.password){
+		console.log("please set your Username and Password and run the script again")
+		flag = true
+	}
+	if(settings.restartTime < 5){
+		console.log("your restart time is too less please set it to a value higher than 5")
+		flag = true
+	}
+	if(flag){
+		process.exit()
 	}
 }

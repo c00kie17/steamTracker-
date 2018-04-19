@@ -3,6 +3,8 @@ var promise = require('promise')
 var buysell = require('./buysell')
 var tracker = require('./tracker')
 
+var hourCounter = 0
+
 gbl.getClient().on('steamGuard', function(domain, callback) {
 	console.log("Steam Guard code needed from email ending in " + domain);
 	callback(code);
@@ -18,6 +20,7 @@ gbl.getClient().on('wallet', function(hasWallet, currency, balance) {
 
 gbl.getClient().on('webSession', function(sessionID, cookies) {
 	gbl.getCommunity().setCookies(cookies);
+	gbl.setsessionID(sessionID)
 	fetchUser().then(function(){
 		start()
 	}).catch(function(err){
@@ -123,13 +126,18 @@ function fetchUser(){
 }
 
 function wait(){
+	if (hourCounter > 300){
+		gbl.cleatItemList()
+		hourCounter = 0
+	}
+	hourCounter = hourCounter + gbl.getSettings().restartTime
 	var options = {weekday: "long", year: "numeric", month: "short",  day: "numeric", hour: "2-digit", minute: "2-digit" }
 	var latest = new Date()
 	differenceVal = latest.getTime() + (gbl.getSettings().restartTime * 60000)
 	var nextcheck = new Date(differenceVal);
 	console.clear()
 	console.log("the next check will occour on: "+nextcheck.toLocaleTimeString("en-us", options))
-	setInterval(function() {
+	setTimeout(function() {
 		start()
 	},(1000*60)*gbl.getSettings().restartTime)
 	
