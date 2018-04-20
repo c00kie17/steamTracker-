@@ -138,7 +138,8 @@ function calculateDiff(item,transaction,change){
 	       	}
 	       	if (settings.autotrader){
 	       		if(item._hashName === "Carreau's Tradition"){
-	       			autotrader.sellitem(item,sellPrice,function(){
+	       			autotrader.sellitem(item,Number(sellPrice).toFixed(2),function(){
+	       				
 						bar.tick()
 					})
 	       		}	
