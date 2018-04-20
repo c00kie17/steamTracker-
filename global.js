@@ -12,7 +12,7 @@ var user = null
 var settings = null
 var inventory = null
 var walletBalance = null
-var sessionID = null
+var cookie = []
 var itemList = []
 var currencyList = {
 	"0": "Invalid",
@@ -156,13 +156,17 @@ module.exports = {
 		return null
 	},
 
-	setsessionID(value){
-		sessionID = value
+	setCookies(value){
+		for (var i = 0; i < value.length; i++) {
+			arr = value[i].split("=")
+			cookie.push(arr)
+		}
 	},
 
-	getsessionID(){
-		return sessionID
-	}
+	getCookies(value){
+		return cookie
+	},
+
 }
 
 function checkSettings(){

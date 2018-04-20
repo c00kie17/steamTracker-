@@ -20,7 +20,7 @@ gbl.getClient().on('wallet', function(hasWallet, currency, balance) {
 
 gbl.getClient().on('webSession', function(sessionID, cookies) {
 	gbl.getCommunity().setCookies(cookies);
-	gbl.setsessionID(sessionID)
+	gbl.setCookies(cookies)
 	fetchUser().then(function(){
 		start()
 	}).catch(function(err){
